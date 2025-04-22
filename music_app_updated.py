@@ -1,3 +1,5 @@
+# music_app.py
+
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel,
@@ -9,7 +11,7 @@ from sqlalchemy import create_engine
 
 # Database Setup
 engine = create_engine(
-    'mssql+pyodbc://@LAPTOP-F7KBVO5O\\SQLEXPRESS01/CSS665_PROIJECT?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
+    'mssql+pyodbc://@LAPTOP-F7KBVO5O\SQLEXPRESS01/CSS665_PROIJECT?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
 )
 conn = engine.raw_connection()
 cursor = conn.cursor()
@@ -35,11 +37,11 @@ class MusicApp(QWidget):
 
     def init_ui(self):
         self.stack.addWidget(self.create_home_page())              # 0
-        self.stack.addWidget(self.create_crud_page("Users_new", "Users", "user_id", ["username", "email"]))         # 1
-        self.stack.addWidget(self.create_crud_page("Songs", "Songs", "song_id", ["title", "artist_id", "duration", "release_year"]))  # 2
-        self.stack.addWidget(self.create_crud_page("Artists", "Artists", "artist_id", ["name", "genre", "country"]))  # 3
-        self.stack.addWidget(self.create_crud_page("Playlists", "Playlists", "playlist_id", ["user_id"]))             # 4
-        self.stack.addWidget(self.create_crud_page("Playlist_Songs", "Playlist Songs", "id", ["playlist_id", "song_id"])) # 5
+        self.stack.addWidget(self.create_crud_page("Users_new", "Users", "user_id", ["username", "email", "created_at"]))         # 1
+        self.stack.addWidget(self.create_crud_page("Songs_new", "Songs", "song_id", ["title", "artist_id", "duration", "release_year"]))  # 2
+        self.stack.addWidget(self.create_crud_page("Artists_new", "Artists", "artist_id", ["name", "genre", "country"]))  # 3
+        self.stack.addWidget(self.create_crud_page("Playlists_new", "Playlists", "playlist_id", ["user_id", "name", "description"]))             # 4
+        self.stack.addWidget(self.create_crud_page("Playlist_Songs_new", "Playlist Songs", "id", ["playlist_id", "song_id"])) # 5
         self.stack.addWidget(self.create_customer_song_page())     # 6
 
         layout = QVBoxLayout()
@@ -49,12 +51,15 @@ class MusicApp(QWidget):
     def create_home_page(self):
         page = QWidget()
         layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignTop)
 
-        title = QLabel("🎧 WELCOME TO MUSIC VIBE")
+        title = QLabel("🎶 Welcome to Music Vibe")
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 28px; font-weight: bold; color: darkgreen; margin: 30px;")
+        title.setStyleSheet("font-size: 32px; font-weight: bold; color: #2E7D32; margin-top: 30px; margin-bottom: 40px;")
 
-        pages = [
+        btn_style = "QPushButton { padding: 14px; font-size: 16px; background-color: #4CAF50; color: white; border-radius: 10px; margin: 8px 40px; } QPushButton:hover { background-color: #388E3C; }"
+
+        buttons_info = [
             ("Manage Users", 1),
             ("Manage Songs", 2),
             ("Manage Artists", 3),
@@ -63,12 +68,13 @@ class MusicApp(QWidget):
             ("🎵 View Customers & Songs", 6)
         ]
 
-        for label, idx in pages:
+        for label, index in buttons_info:
             btn = QPushButton(label)
-            btn.setStyleSheet("padding: 12px; font-size: 16px; background-color: #4CAF50; color: white; border-radius: 6px;")
-            btn.clicked.connect(lambda _, x=idx: self.stack.setCurrentIndex(x))
-            layout.addWidget(btn, alignment=Qt.AlignCenter)
+            btn.setStyleSheet(btn_style)
+            btn.clicked.connect(lambda _, idx=index: self.stack.setCurrentIndex(idx))
+            layout.addWidget(btn, alignment=Qt.AlignHCenter)
 
+        layout.insertWidget(0, title)
         page.setLayout(layout)
         return page
 
@@ -194,9 +200,9 @@ class MusicApp(QWidget):
             cursor.execute("""
                 SELECT U.username, S.title
                 FROM Users_new U
-                JOIN Playlists P ON U.user_id = P.user_id
-                JOIN Playlist_Songs PS ON P.playlist_id = PS.playlist_id
-                JOIN Songs S ON PS.song_id = S.song_id
+                JOIN Playlists_new P ON U.user_id = P.user_id
+                JOIN Playlist_Songs_new PS ON P.playlist_id = PS.playlist_id
+                JOIN Songs_new S ON PS.song_id = S.song_id
             """)
             for row in cursor.fetchall():
                 self.output_area.append(f"Customer: {row[0]} | Song: {row[1]}")
@@ -208,4 +214,3 @@ if __name__ == '__main__':
     win = MusicApp()
     win.show()
     sys.exit(app.exec_())
-
